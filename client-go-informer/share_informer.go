@@ -18,10 +18,11 @@ func ShareInformerDemo() {
 		panic(err)
 	}
 
-	factory := informers.NewSharedInformerFactory(clientSet, 0)
+	//factory := informers.NewSharedInformerFactory(clientSet, 0)
+	factory := informers.NewSharedInformerFactoryWithOptions(clientSet, 0, informers.WithNamespace("default"))
 	informer := factory.Core().V1().Pods().Informer()
 
-	eventHandler, err := informer.AddEventHandler(cache.ResourceEventHandlerFuncs{
+	informer.AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc: func(obj interface{}) {
 			println("add event")
 		},
@@ -32,9 +33,9 @@ func ShareInformerDemo() {
 			println("delete eventls")
 		},
 	})
-	if err != nil {
-		panic(err)
-	}
 
+	stopChan := make(chan struct{})
 	factory.Start(stopChan)
+	<-stopChan
+
 }
